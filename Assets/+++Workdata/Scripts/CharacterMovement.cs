@@ -6,18 +6,42 @@ using static UnityEngine.InputSystem.InputAction;
 
 public class CharacterMovement : MonoBehaviour
 {
+    #region PlayerInput Variables
     private Player_InputActions inputActions;
 
     private InputAction moveAction;
     private InputAction rollAction;
     private InputAction attackAction;
+    private InputAction jumpAction;
+
+    #endregion
+    #region public Variables
 
     public Vector2 moveInput;
     public float speed = 5.0f;
+    public float jumpPower = 5;
 
-    public Rigidbody2D rb;
-    public Animator anim;
-    public SpriteRenderer spriteRenderer;
+    public float radialOverlapCircle;
+    public bool isGrounded;
+    public Vector2 cubeSize;
+    public Vector3 cubePos;
+
+    public LayerMask groundLayer;
+    #endregion
+    #region private Variables
+
+    Rigidbody2D rb;
+    Animator anim;
+    SpriteRenderer spriteRenderer;
+
+    #endregion
+    #region Unity Event Functions
+    private void Start()
+    {
+        rb = gameObject.GetComponent<Rigidbody2D>();
+        anim = gameObject.GetComponent<Animator>();
+        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+    }
 
     private void Awake()
     {
@@ -25,6 +49,7 @@ public class CharacterMovement : MonoBehaviour
         moveAction = inputActions.Player.Move;
         rollAction = inputActions.Player.Roll;
         attackAction = inputActions.Player.Attack;
+        jumpAction = inputActions.Player.Jump;
     }
 
     private void OnEnable()
@@ -36,11 +61,17 @@ public class CharacterMovement : MonoBehaviour
 
         attackAction.performed += Attack;
         rollAction.performed += Roll;
+
+        jumpAction.performed += Jump;
     }
 
     private void FixedUpdate()
     {
+        isGrounded = Physics2D.OverlapBox(transform.position + cubePos, cubeSize, 0, groundLayer); 
+
         rb.velocity = new Vector2(moveInput.x * speed, rb.velocity.y);
+
+        SetGroundAnimator();
     }
 
     private void OnDisable()
@@ -52,8 +83,12 @@ public class CharacterMovement : MonoBehaviour
 
         attackAction.performed -= Attack;
         rollAction.performed -= Roll;
-    }
 
+        jumpAction.performed -= Jump;
+    }
+    #endregion
+    #region InputEvents
+    #region Movement
     void Move(CallbackContext ctx)
     {
         if(ctx.performed)
@@ -86,20 +121,46 @@ public class CharacterMovement : MonoBehaviour
         }
     }
 
-    void Attack(CallbackContext ctx)
-    {
-        CallAction(10);
-    }
-
     void Roll(CallbackContext ctx)
     {
         CallAction(1);
     }
 
+    void Jump(CallbackContext ctx)
+    {
+        if (isGrounded)
+        {
+            rb.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+        }
+        CallAction(2);
+        isGrounded = false;
+    }
+
+    #endregion
+
+    #region Attack
+    void Attack(CallbackContext ctx)
+    {
+        CallAction(10);
+    }
+
+    #endregion
+    #endregion
+    #region Animation Events
     void CallAction(int id)
     {
         anim.SetTrigger("ActionTrigger");
         anim.SetInteger("ActionId", id);
     }
 
+    void SetGroundAnimator()
+    {
+        anim.SetBool("isGrounded", isGrounded);
+    }
+    #endregion
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(transform.position + cubePos, cubeSize);
+    }
 }
