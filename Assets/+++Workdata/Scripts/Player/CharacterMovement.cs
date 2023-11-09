@@ -19,10 +19,12 @@ public class CharacterMovement : MonoBehaviour
 
     public Vector2 moveInput;
     public float speed = 5.0f;
-    public float jumpPower = 5;
+    public float jumpPower = 7;
+    public float rollPower = 7;
 
     public float radialOverlapCircle;
     public bool isGrounded;
+    public bool isRolling;
     public Vector2 cubeSize;
     public Vector3 cubePos;
 
@@ -67,9 +69,13 @@ public class CharacterMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        isGrounded = Physics2D.OverlapBox(transform.position + cubePos, cubeSize, 0, groundLayer); 
+        isGrounded = Physics2D.OverlapBox(transform.position + cubePos, cubeSize, 0, groundLayer);
 
-        rb.velocity = new Vector2(moveInput.x * speed, rb.velocity.y);
+        if (isRolling == false)
+        {
+            rb.velocity = new Vector2(moveInput.x * speed, rb.velocity.y);
+        }
+
 
         SetGroundAnimator();
     }
@@ -91,7 +97,7 @@ public class CharacterMovement : MonoBehaviour
     #region Movement
     void Move(CallbackContext ctx)
     {
-        if(ctx.performed)
+        if (ctx.performed)
         {
             print("WASD wurde gedrückt");
         }
@@ -123,7 +129,28 @@ public class CharacterMovement : MonoBehaviour
 
     void Roll(CallbackContext ctx)
     {
-        CallAction(1);
+        if (!isRolling && isGrounded)
+        {
+            isRolling = true;
+
+            if (spriteRenderer.flipX)
+            {
+                rb.AddForce(new Vector2(-1 * rollPower, 0), ForceMode2D.Impulse);
+            }
+            else
+            {
+                rb.AddForce(Vector2.right * rollPower, ForceMode2D.Impulse);
+            }
+
+            CallAction(1);
+
+            //Invoke("EndRoll", .5f);
+        }
+    }
+
+    void EndRoll()
+    {
+        isRolling = false;
     }
 
     void Jump(CallbackContext ctx)
@@ -141,7 +168,22 @@ public class CharacterMovement : MonoBehaviour
     #region Attack
     void Attack(CallbackContext ctx)
     {
-        CallAction(10);
+        if (isGrounded) // Ground Attacks
+        {
+            if (isRolling)
+            {
+                CallAction(11);
+            }
+            else
+            {
+                CallAction(10);
+            }
+        }
+        else // in der Luft
+        {
+
+        }
+
     }
 
     #endregion
