@@ -97,24 +97,14 @@ public class CharacterMovement : MonoBehaviour
     #region Movement
     void Move(CallbackContext ctx)
     {
-        if (ctx.performed)
-        {
-            print("WASD wurde gedrückt");
-        }
-        else
-        {
-            print("WASD wurde losgelassen");
-        }
-
-
         moveInput = moveAction.ReadValue<Vector2>();
         if (moveInput.x < 0)
         {
-            spriteRenderer.flipX = true;
+            gameObject.transform.localScale = new Vector3(-1, 1, 1);
         }
         else if (moveInput.x > 0)
         {
-            spriteRenderer.flipX = false;
+            gameObject.transform.localScale = new Vector3(1, 1, 1);
         }
 
         if (moveInput.x != 0)
@@ -133,7 +123,7 @@ public class CharacterMovement : MonoBehaviour
         {
             isRolling = true;
 
-            if (spriteRenderer.flipX)
+            if (gameObject.transform.localScale.x == -1)
             {
                 rb.AddForce(new Vector2(-1 * rollPower, 0), ForceMode2D.Impulse);
             }

@@ -20,4 +20,5 @@ public class TriggerBehaviour : MonoBehaviour
     {
         collision.gameObject.GetComponent<SpriteRenderer>().color = Color.white;
     }
+    
 }
