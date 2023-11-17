@@ -37,7 +37,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - SystemLayer[DoNotRemove]
   m_SortingLayers:
   - name: Default
     uniqueID: 0
